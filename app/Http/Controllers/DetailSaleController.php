@@ -24,7 +24,6 @@ class DetailSaleController extends Controller
         $validatedData->price = $request->price;
         $validatedData->total = $request->total;
         $validatedData->sale_id = $request->sale_id;
-        $validatedData->refund_id = $request->refund_id;
         $validatedData->product_id = $request->product_id;
 
         $validatedData->save();

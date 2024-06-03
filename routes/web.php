@@ -37,3 +37,7 @@ $router->post('/detailsale', 'DetailSaleController@store');
 $router->get('/detailsale/{id}', 'DetailSaleController@show');
 $router->put('/detailsale/{id}', 'DetailSaleController@update');
 $router->delete('/detailsale/{id}', 'DetailSaleController@destroy');
+
+$router->post('/import', 'ImportController@import');
+$router->post('/importrefunds', 'ImportController@importRefunds');
+$router->post('/importdetail', 'ImportController@importDetailSale');

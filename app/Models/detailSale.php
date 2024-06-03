@@ -14,7 +14,6 @@ class detailSale extends Model
         'price', 
         'total',
         'sale_id', 
-        'refund_id',
         'product_id'
     ];
 

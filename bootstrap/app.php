@@ -95,6 +95,7 @@ $app->configure('app');
 // $app->register(App\Providers\AuthServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
 $app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
+$app->register(Maatwebsite\Excel\ExcelServiceProvider::class);
 
 
 /*
@@ -107,6 +108,8 @@ $app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
 | can respond to, as well as the controllers that may handle them.
 |
 */
+class_alias('Maatwebsite\Excel\Facades\Excel', 'Excel');
+
 
 $app->router->group([
     'namespace' => 'App\Http\Controllers',

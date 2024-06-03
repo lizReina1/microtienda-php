@@ -22,6 +22,7 @@ class RefundsController extends Controller
             $validatedData->reason = $request->reason;
             $validatedData->quantity = $request->quantity;
             $validatedData->customer_id = $request->customer_id;
+            $validatedData->detail_sale_id =$request->detail_sale_id;
 
         $validatedData->save();
 

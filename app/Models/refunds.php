@@ -20,6 +20,7 @@ class refunds extends Model
         'reason', 
         'quantity', 
         'customer_id',
+        'detail_sale_id',
     ];
 
     // Fetch customer details from Customer microservice
@@ -31,8 +32,8 @@ class refunds extends Model
         return $response->json();
     }
 
-    public function detailSales()
+    public function detailSale()
     {
-        return $this->hasMany(detailSale::class, 'sale_id');
+        return $this->belongsTo(detailSale::class);
     }
 }
