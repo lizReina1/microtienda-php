@@ -6,9 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Http; 
 use App\Models\sales;
 use App\Models\refunds;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class detailSale extends Model
-{
+{   use HasFactory;
     protected $fillable = [ 
         'quantity',
         'price', 

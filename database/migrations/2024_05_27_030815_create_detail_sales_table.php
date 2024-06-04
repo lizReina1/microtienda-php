@@ -17,7 +17,7 @@ return new class extends Migration
             $table->float('price', 8, 2);
             $table->float('total', 8, 2);
             $table->foreignId('sale_id')->references('id')->on('sales')->onDelete('cascade');
-            $table->integer('product_id');
+            $table->integer('product_id')->nullable();
             $table->timestamps();
 
             // Foreign key constraints

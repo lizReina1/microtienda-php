@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('refunds', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->date('date');
-            $table->text('reason'); 
-            $table->integer('quantity');
-            $table->integer('customer_id');
+            $table->date('date')->nullable();;
+            $table->text('reason')->nullable();; 
+            $table->integer('quantity')->nullable();
+            $table->integer('customer_id')->nullable();
             $table->foreignId('detail_sale_id')->references('id')->on('detail_sales')->onDelete('cascade');
 
             $table->timestamps();

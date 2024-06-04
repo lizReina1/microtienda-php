@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('sales', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->date('date');
-            $table->float('total', 8, 2);
-            $table->string('payment_type');
-            $table->integer('quantity_items');
-            $table->integer('customer_id'); 
-            $table->integer('user_id'); 
+            $table->date('date')->nullable();
+            $table->float('total', 8, 2)->nullable();
+            $table->string('payment_type')->default('cash');
+            $table->integer('quantity_items')->nullable();;
+            $table->integer('customer_id')->nullable();
+            $table->integer('user_id')->nullable(); 
 
             $table->timestamps();
             
