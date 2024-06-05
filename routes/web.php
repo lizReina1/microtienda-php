@@ -19,13 +19,16 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
+$router->get('/sales/total-sales-by-year', 'SalesController@getTotalSalesByYear');
+$router->get('/sales/total-sales-by-month/{year}', 'SalesController@getTotalSalesByMonth');
+$router->get('/sales/total-sales-by-date-range', 'SalesController@getTotalSalesByDateRange');
+
 $router->get('/sales','SalesController@index');
 $router->post('/sales', 'SalesController@store');
 $router->get('/sales/{id}','SalesController@show');
 $router->get('/sales/find/{id}','SalesController@findById');
 $router->put('/sales/{id}', 'SalesController@update');
 $router->delete('/sales/{id}', 'SalesController@destroy');
-
 
 $router->get('/refunds','RefundsController@index');
 $router->post('/refunds', 'RefundsController@store');

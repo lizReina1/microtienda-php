@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\detailSale;
+use App\Models\SaleDetail;
 use Illuminate\Http\Request;
 
 class DetailSaleController extends Controller
@@ -10,14 +10,14 @@ class DetailSaleController extends Controller
      // List all detail sales
     public function index()
     {
-        $detailSales = detailSale::all();
+        $detailSales = SaleDetail::all();
         return response()->json($detailSales);
     }
 
     // Store a newly created detail sale
     public function store(Request $request)
     {
-        $validatedData = new detailSale();
+        $validatedData = new SaleDetail();
 
         
         $validatedData->quantity = $request->quantity;
@@ -35,7 +35,7 @@ class DetailSaleController extends Controller
     public function show($id)
     {
         
-        $detailSale = detailSale::find($id);
+        $detailSale = SaleDetail::find($id);
 
         if (!$detailSale) {
             return response()->json(['message' => 'Detail Sale not found'], 404);
@@ -48,7 +48,7 @@ class DetailSaleController extends Controller
     public function update(Request $request, $id)
     {
         // Find the existing detail sale
-        $detailSale = detailSale::find($id);
+        $detailSale = SaleDetail::find($id);
 
         if (!$detailSale) {
             return response()->json(['message' => 'Detail Sale not found'], 404);
@@ -70,7 +70,7 @@ class DetailSaleController extends Controller
     // Remove the specified detail sale
     public function destroy($id)
     {
-        $detailSale = detailSale::find($id);
+        $detailSale = SaleDetail::find($id);
 
         if (!$detailSale) {
             return response()->json(['message' => 'Detail Sale not found'], 404);

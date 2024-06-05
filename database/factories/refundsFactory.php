@@ -2,18 +2,17 @@
 
 namespace Database\Factories;
 
-use App\Models\refunds;
-use App\Models\sales;
+use App\Models\Refund;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class refundsFactory extends Factory
+class RefundsFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = refunds::class;
+    protected $model = Refund::class;
 
     /**
      * Define the model's default state.

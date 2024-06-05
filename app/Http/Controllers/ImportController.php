@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\detailSale;
-use App\Models\refunds;
-use App\Models\sales;
+use App\Models\Refund;
+use App\Models\Sale;
+use App\Models\SaleDetail;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -27,7 +27,7 @@ class ImportController extends Controller
             $date = \DateTime::createFromFormat('m/d/Y', $data['date'])->format('Y-m-d');
 
             // Ajusta esto según los nombres de tus columnas y el modelo
-            $validatedData = new sales;
+            $validatedData = new Sale;
             $validatedData->date  = $date;
             $validatedData->total = $data['total'];
             $validatedData->payment_type = $data['payment_type'];
@@ -60,7 +60,7 @@ class ImportController extends Controller
             $data = array_combine($header, $row);
             $date = \DateTime::createFromFormat('m/d/Y', $data['date'])->format('Y-m-d');
 
-            $validatedData = new refunds();
+            $validatedData = new Refund();
 
             $validatedData->date  = $date;
             $validatedData->reason = $data['reason'];
@@ -91,7 +91,7 @@ class ImportController extends Controller
         while (($row = fgetcsv($file, 1000, ',')) !== false) {
             $data = array_combine($header, $row);
 
-            $validatedData = new detailSale();
+            $validatedData = new SaleDetail();
 
             $validatedData->quantity = $data['quantity'];
             $validatedData->price = $data['price'];

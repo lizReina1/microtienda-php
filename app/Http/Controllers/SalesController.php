@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\sales;
+use App\Models\Sale;
+use App\Models\SaleDetail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class SalesController extends Controller
 {
@@ -14,19 +17,9 @@ class SalesController extends Controller
      */
     public function index()
     {
-        $sales= sales::all();
+        $sales = Sale::all();
 
-        return response()->json($sales);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        return response()->json($sales, 200);
     }
 
     /**
@@ -37,110 +30,267 @@ class SalesController extends Controller
      */
     public function store(Request $request)
     {
-        $validatedData = new sales;
+        $rules = [
+            'date' => 'required',
+            'payment_type' => 'required',
+            'customer_id' => 'required',
+            'user_id' => 'required',
+            'details' => 'required|array|min:1',
+            'details.*.product_id' => 'required',
+            'details.*.quantity' => 'required',
+            'details.*.price' => 'required',
+        ];
 
-            $validatedData->date  = $request->date;
-            $validatedData->total = $request->total;
-            $validatedData->payment_type = $request->payment_type;
-            $validatedData->quantity_items = $request->quantity_items;
-            $validatedData->customer_id = $request->customer_id;
-            $validatedData->user_id = $request->user_id;
+        $validator = Validator::make($request->all(), $rules);
 
-        $validatedData->save();
+        if ($validator->fails()) {
+            return response()->json(['error' => 'Error de validación', 'mensaje' => $validator->errors()], 400);
+        }
 
-        return response()->json($validatedData, 201);
+        try {
+            DB::beginTransaction();
+
+            $sale = new Sale();
+            $sale->date = $request->date;
+            $sale->user_id = $request->user_id;
+            $sale->customer_id = $request->customer_id;
+            $sale->save();
+
+            $total = 0;
+            $quantity = 0;
+            $saleDetailsArray = [];
+
+            foreach ($request->input('details') as $detail) {
+                $saleDetail = new SaleDetail();
+                $saleDetail->product_id = $detail['product_id'];
+                $saleDetail->quantity = $detail['quantity'];
+                $saleDetail->price = $detail['price'];
+                $saleDetail->total = $detail['quantity'] * $detail['price'];
+                $saleDetail->sale_id = $sale->id;
+                $saleDetail->save();
+
+                $total += $saleDetail->quantity * $saleDetail->price;
+                $quantity += $saleDetail->quantity;
+
+                $saleDetailsArray[] = [
+                    'product_id' => $saleDetail->product_id,
+                    'quantity' => $saleDetail->quantity,
+                    'price' => $saleDetail->price,
+                    'total' => $saleDetail->total,
+                ];
+            }
+            $sale->total = $total;
+            $sale->quantity_items = $quantity;
+            $sale->save();
+
+            DB::commit();
+
+            return response()->json(['mensaje' => 'Venta y detalles creados con éxito', 'sale' => $sale, 'order_details' => $saleDetailsArray], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            return response()->json(['error' => 'Error al crear la venta', 'mensaje' => $e->getMessage()], 500);
+        }
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Sales  $sales
+     * @param  \App\Models\Sale  $sales
      * @return \Illuminate\Http\JsonResponse
      */
     public function show($id)
     {
-        $sales = sales::findOrFail($id);
-        return response()->json($sales);
-    }
+        $sale = Sale::with('details')->find($id);
 
-    /**
-     * Search for a resource by ID.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function findById($id)
-    {
-        $sales = sales::find($id);
-
-        if (!$sales) {
-            return response()->json(['message' => 'Sale not found'], 404);
+        if (!$sale) {
+            return response()->json(['mensaje' => 'Venta no encontrada']);
         }
 
-        return response()->json($sales);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Sales  $sales
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Sales $sales)
-    {
-
+        return response()->json($sale, 200);
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Sales  $sales
+     * @param  \App\Models\Sale  $sales
      * @return \Illuminate\Http\JsonResponse
      */
     public function update(Request $request, $id)
     {
-        // Validar los datos de entrada
-        $validatedData = new sales;
+        $rules = [
+            'date' => 'required',
+            'details' => 'required|array|min:1',
+            'details.*.product_id' => 'required',
+            'details.*.quantity' => 'required',
+            'details.*.price' => 'required',
+        ];
 
-        $validatedData->date  = $request->date;
-        $validatedData->total = $request->total;
-        $validatedData->payment_type = $request->payment_type;
-        $validatedData->quantity_items = $request->quantity_items;
-        $validatedData->customer_id = $request->customer_id;
-        $validatedData->user_id = $request->user_id;
+        $validator = Validator::make($request->all(), $rules);
 
-        // Buscar la venta existente
-        $sale = sales::find($id);
-        // Verificar si la venta existe
-        if (!$sale) {
-            return response()->json(['message' => 'Sale not found'], 404);
+        if ($validator->fails()) {
+            return response()->json(['error' => 'Error de validación', 'mensaje' => $validator->errors()], 400);
         }
 
-        // Actualizar los datos de la venta
-        $sale->date = $validatedData['date'];
-        $sale->total = $validatedData['total'];
-        $sale->payment_type = $validatedData['payment_type'];
-        $sale->quantity_items = $validatedData['quantity_items'];
-        $sale->customer_id = $validatedData['customer_id'];
-        $sale->user_id = $validatedData['user_id'];
+        try {
+            DB::beginTransaction();
 
-        // Guardar los cambios
-        $sale->save();
+            $sale = Sale::find($id);
 
-        // Devolver la respuesta JSON
-        return response()->json($sale, 200);
+            if (!$sale) {
+                return response()->json(['mensaje' => 'Venta no encontrada'], 404);
+            }
+
+            $sale->update($request->only([
+                'date',
+                'user_id',
+                'customer_id'
+            ]));
+
+            $sale->details()->delete();
+
+            $total = 0;
+            $quantity = 0;
+            $saleDetailsArray = [];
+            $payload = [];
+
+            foreach ($request->input('details') as $detail) {
+                $saleDetail = $sale->details()->create([
+                    'product_id' => $detail['product_id'],
+                    'quantity' => $detail['quantity'],
+                    'price' => $detail['price'],
+                    'total' => $detail['quantity'] * $detail['price']
+                ]);
+
+                $total += $saleDetail->quantity * $saleDetail->price;
+                $quantity += $saleDetail->quantity;
+
+                $saleDetailsArray[] = [
+                    'product_id' => $saleDetail->product_id,
+                    'quantity' => $saleDetail->quantity,
+                    'price' => $saleDetail->price,
+                    'total' => $saleDetail->total,
+                ];
+
+                $payload[] = [
+                    'product_id' => $saleDetail->product_id,
+                    'quantity' => $saleDetail->quantity,
+                ];
+            }
+
+            // Actualizar el stock en productos
+            /* if ($sale->status === 'delivered') {
+                $response = Http::post('http://ruta-del-microservicio-de-inventario/actualizar-stock', [
+                    'sale_detail' => $payload,
+                ]);
+
+                if (!$response->successful()) {
+                    DB::rollback();
+                    return response()->json(['error' => 'Error al actualizar el stock en el microservicio de inventario', 'mensaje' => $response->body()], $response->status());
+                }
+            } */
+
+            $sale->total = $total;
+            $sale->quantity_items = $quantity;
+            $sale->save();
+
+            DB::commit();
+
+            return response()->json(['mensaje' => 'Venta y detalles actualizados con éxito', 'sale' => $sale, 'sale_details' => $saleDetailsArray], 200);
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            return response()->json(['error' => 'Error al actualizar la venta', 'mensaje' => $e->getMessage()], 500);
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Sales  $sales
+     * @param  \App\Models\Sale  $sales
      * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(Sales $sales)
+    public function destroy($id)
     {
-        $sales->delete();
-        return response()->json(null, 204);
+        $sale = Sale::find($id);
+
+        if (!$sale) {
+            return response()->json(['mensaje' => 'Venta no encontrada'], 404);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $sale->details()->delete();
+            $sale->delete();
+
+            DB::commit();
+
+            return response()->json(['mensaje' => 'Venta y detalles eliminados con éxito'], 200);
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            return response()->json(['error' => 'Error al eliminar la venta', 'mensaje' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getTotalSalesByYear()
+    {
+        try {
+            $sales = Sale::select(
+                DB::raw('YEAR(date) as year'),
+                DB::raw('SUM(total) as total_sales')
+            )
+                ->groupBy('year')
+                ->get();
+
+            return response()->json(['total_sales_by_year' => $sales], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al obtener el total de ventas por año', 'mensaje' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getTotalSalesByMonth($year)
+    {
+        try {
+            $sales = Sale::select(
+                DB::raw('MONTH(date) as month'),
+                DB::raw('SUM(total) as total_sales')
+            )
+                ->whereYear('date', $year)
+                ->groupBy('month')
+                ->get();
+
+            return response()->json(['total_sales_by_month' => $sales], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al obtener el total de ventas por mes', 'mensaje' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getTotalSalesByDateRange(Request $request)
+    {
+        $rules = [
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => 'Error de validación', 'mensaje' => $validator->errors()], 400);
+        }
+
+        try {
+            $sales = Sale::select(
+                DB::raw('SUM(total) as total_sales')
+            )
+                ->whereBetween('date', [$request->start_date, $request->end_date])
+                ->first();
+
+            return response()->json(['total_sales_by_date_range' => $sales], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al obtener el total de ventas por rango de fecha', 'mensaje' => $e->getMessage()], 500);
+        }
     }
 }
