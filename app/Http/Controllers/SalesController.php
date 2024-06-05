@@ -57,8 +57,26 @@ class SalesController extends Controller
      * @param  \App\Models\Sales  $sales
      * @return \Illuminate\Http\JsonResponse
      */
-    public function show(sales $sales)
+    public function show($id)
     {
+        $sales = sales::findOrFail($id);
+        return response()->json($sales);
+    }
+
+    /**
+     * Search for a resource by ID.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function findById($id)
+    {
+        $sales = sales::find($id);
+
+        if (!$sales) {
+            return response()->json(['message' => 'Sale not found'], 404);
+        }
+
         return response()->json($sales);
     }
 

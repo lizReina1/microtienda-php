@@ -21,7 +21,8 @@ $router->get('/', function () use ($router) {
 
 $router->get('/sales','SalesController@index');
 $router->post('/sales', 'SalesController@store');
-$router->get('/sales/{id}', 'SalesController@show');
+$router->get('/sales/{id}','SalesController@show');
+$router->get('/sales/find/{id}','SalesController@findById');
 $router->put('/sales/{id}', 'SalesController@update');
 $router->delete('/sales/{id}', 'SalesController@destroy');
 
