@@ -6,15 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Http; 
 
-class refunds extends Model
+class Refund extends Model
 {
     use HasFactory;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
+    protected $table = 'refunds';
     protected $fillable = [
         'date', 
         'reason', 
@@ -34,6 +29,6 @@ class refunds extends Model
 
     public function detailSale()
     {
-        return $this->belongsTo(detailSale::class);
+        return $this->belongsTo(SaleDetail::class);
     }
 }

@@ -4,12 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Http; 
-use App\Models\sales;
-use App\Models\refunds;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class detailSale extends Model
-{   use HasFactory;
+class SaleDetail extends Model
+{   
+    use HasFactory;
+    protected $table = 'detail_sales';
     protected $fillable = [ 
         'quantity',
         'price', 
@@ -26,13 +26,13 @@ class detailSale extends Model
         return $response->json();
     }
 
-    public function sales()
+    public function sale()
     {
-        return $this->belongsTo(sales::class);
+        return $this->belongsTo(Sale::class);
     }
 
     public function refunds()
     {
-        return $this->belongsTo(refunds::class);
+        return $this->hasMany(Refund::class);
     }
 }

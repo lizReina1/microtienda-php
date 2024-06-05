@@ -2,21 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\refunds;
+use App\Models\Refund;
 use Illuminate\Http\Request;
 
-class RefundsController extends Controller
+class RefundController extends Controller
 {
     public function index()
     {
-        $refunds = refunds::all();
-        return response()->json($refunds);
+        $Refund = Refund::all();
+        return response()->json($Refund);
     }
 
     // Store a newly created refund
     public function store(Request $request)
     {
-        $validatedData = new refunds();
+        $validatedData = new Refund();
 
             $validatedData->date  = $request->date;
             $validatedData->reason = $request->reason;
@@ -32,7 +32,7 @@ class RefundsController extends Controller
     // Display the specified refund
     public function show($id)
     {
-        $refund = refunds::find($id);
+        $refund = Refund::find($id);
 
         if (!$refund) {
             return response()->json(['message' => 'Refund not found'], 404);
@@ -44,7 +44,7 @@ class RefundsController extends Controller
     public function update(Request $request, $id)
     {
         // Validar los datos de entrada
-        $validatedData = new refunds;
+        $validatedData = new Refund;
 
         $validatedData->date  = $request->date;
         $validatedData->reason = $request->reason;
@@ -52,7 +52,7 @@ class RefundsController extends Controller
         $validatedData->customer_id = $request->customer_id;
 
         // Buscar la venta existente
-        $refund = refunds::find($id);
+        $refund = Refund::find($id);
         // Verificar si la venta existe
         if (!$refund) {
             return response()->json(['message' => 'Sale not found'], 404);
@@ -73,7 +73,7 @@ class RefundsController extends Controller
     // Remove the specified refund
     public function destroy($id)
     {
-        $refund = refunds::find($id);
+        $refund = Refund::find($id);
 
         if (!$refund) {
             return response()->json(['message' => 'Refund not found'], 404);

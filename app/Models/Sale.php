@@ -7,15 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Http; 
 use App\Models\detailSale;
 
-class sales extends Model
+class Sale extends Model
 {
     use HasFactory;
+    protected $table = 'sales';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'date',
         'total',
@@ -43,8 +39,8 @@ class sales extends Model
         return $response->json();
     }
 
-    public function detailSales()
+    public function details()
     {
-        return $this->hasMany(detailSale::class, 'sale_id');
+        return $this->hasMany(SaleDetail::class, 'sale_id');
     }
 }
