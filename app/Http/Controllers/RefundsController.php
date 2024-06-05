@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Refund;
 use Illuminate\Http\Request;
 
-class RefundController extends Controller
+class RefundsController extends Controller
 {
     public function index()
     {
@@ -32,7 +32,7 @@ class RefundController extends Controller
     // Display the specified refund
     public function show($id)
     {
-        $refund = Refund::find($id);
+        $refund = Refund::with('detailSale')->find($id);
 
         if (!$refund) {
             return response()->json(['message' => 'Refund not found'], 404);

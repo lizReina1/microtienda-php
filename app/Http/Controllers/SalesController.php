@@ -132,7 +132,7 @@ class SalesController extends Controller
         if ($validator->fails()) {
             return response()->json(['error' => 'Error de validación', 'mensaje' => $validator->errors()], 400);
         }
-        
+
         try {
             DB::beginTransaction();
 
@@ -179,6 +179,7 @@ class SalesController extends Controller
                 ];
             }
 
+            // Actualizar el stock en productos
             /* if ($sale->status === 'delivered') {
                 $response = Http::post('http://ruta-del-microservicio-de-inventario/actualizar-stock', [
                     'sale_detail' => $payload,
@@ -231,6 +232,65 @@ class SalesController extends Controller
             DB::rollback();
 
             return response()->json(['error' => 'Error al eliminar la venta', 'mensaje' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getTotalSalesByYear()
+    {
+        try {
+            $sales = Sale::select(
+                DB::raw('YEAR(date) as year'),
+                DB::raw('SUM(total) as total_sales')
+            )
+                ->groupBy('year')
+                ->get();
+
+            return response()->json(['total_sales_by_year' => $sales], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al obtener el total de ventas por año', 'mensaje' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getTotalSalesByMonth($year)
+    {
+        try {
+            $sales = Sale::select(
+                DB::raw('MONTH(date) as month'),
+                DB::raw('SUM(total) as total_sales')
+            )
+                ->whereYear('date', $year)
+                ->groupBy('month')
+                ->get();
+
+            return response()->json(['total_sales_by_month' => $sales], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al obtener el total de ventas por mes', 'mensaje' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getTotalSalesByDateRange(Request $request)
+    {
+        $rules = [
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => 'Error de validación', 'mensaje' => $validator->errors()], 400);
+        }
+
+        try {
+            $sales = Sale::select(
+                DB::raw('SUM(total) as total_sales')
+            )
+                ->whereBetween('date', [$request->start_date, $request->end_date])
+                ->first();
+
+            return response()->json(['total_sales_by_date_range' => $sales], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al obtener el total de ventas por rango de fecha', 'mensaje' => $e->getMessage()], 500);
         }
     }
 }
