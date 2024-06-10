@@ -7,6 +7,7 @@ use App\Models\SaleDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class SalesController extends Controller
 {
@@ -78,6 +79,15 @@ class SalesController extends Controller
                     'price' => $saleDetail->price,
                     'total' => $saleDetail->total,
                 ];
+
+                //Actualizar stock de productos
+                $response = Http::put("http://localhost:3000/api/producto/{$saleDetail->product_id}/decrementar-stock", [
+                    'quantity' => $saleDetail->quantity
+                ]);
+
+                if ($response->failed()) {
+                    throw new \Exception("Error al actualizar el stock del producto ID: {$saleDetail->product_id}");
+                }
             }
             $sale->total = $total;
             $sale->quantity_items = $quantity;
@@ -179,17 +189,14 @@ class SalesController extends Controller
                 ];
             }
 
-            // Actualizar el stock en productos
-            /* if ($sale->status === 'delivered') {
-                $response = Http::post('http://ruta-del-microservicio-de-inventario/actualizar-stock', [
-                    'sale_detail' => $payload,
-                ]);
+            //Actualizar stock de productos
+            $response = Http::put("http://localhost:3000/api/producto/{$saleDetail->product_id}/decrementar-stock", [
+                'quantity' => $saleDetail->quantity
+            ]);
 
-                if (!$response->successful()) {
-                    DB::rollback();
-                    return response()->json(['error' => 'Error al actualizar el stock en el microservicio de inventario', 'mensaje' => $response->body()], $response->status());
-                }
-            } */
+            if ($response->failed()) {
+                throw new \Exception("Error al actualizar el stock del producto ID: {$saleDetail->product_id}");
+            }
 
             $sale->total = $total;
             $sale->quantity_items = $quantity;
@@ -282,15 +289,53 @@ class SalesController extends Controller
         }
 
         try {
-            $sales = Sale::select(
+            $salesByMonth = Sale::select(
+                DB::raw('YEAR(date) as year'),
+                DB::raw('MONTH(date) as month'),
                 DB::raw('SUM(total) as total_sales')
             )
                 ->whereBetween('date', [$request->start_date, $request->end_date])
-                ->first();
+                ->groupBy(DB::raw('YEAR(date)'), DB::raw('MONTH(date)'))
+                ->get();
 
-            return response()->json(['total_sales_by_date_range' => $sales], 200);
+            return response()->json(['total_sales_by_month' => $salesByMonth], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error al obtener el total de ventas por rango de fecha', 'mensaje' => $e->getMessage()], 500);
         }
     }
+
+    public function getRecurringCustomers()
+    {
+        try {
+            $recurringCustomers = Sale::select(
+                'customer_id',
+                DB::raw('COUNT(*) as total_purchases'),
+                DB::raw('SUM(total) as total_spent')
+            )
+                ->groupBy('customer_id')
+                ->having('total_purchases', '>', 1) // Filtrar clientes con más de una compra
+                ->orderBy('total_purchases', 'desc')
+                ->get();
+
+            // Obtener información detallada de cada cliente recurrente
+            $customersDetails = [];
+            foreach ($recurringCustomers as $customer) {
+                $customerDetails = [];
+                $customerDetails['customer_id'] = $customer->customer_id;
+                $customerDetails['total_purchases'] = $customer->total_purchases;
+                $customerDetails['total_spent'] = $customer->total_spent;
+
+                // Puedes agregar más información del cliente aquí si lo deseas, como su nombre, correo electrónico, etc.
+                // Ejemplo: $customerDetails['name'] = Customer::find($customer->customer_id)->name;
+
+                $customersDetails[] = $customerDetails;
+            }
+
+            return response()->json(['recurring_customers' => $customersDetails], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al obtener los clientes recurrentes', 'mensaje' => $e->getMessage()], 500);
+        }
+    }
+
+
 }
