@@ -81,7 +81,7 @@ class SalesController extends Controller
                 ];
 
                 //Actualizar stock de productos
-                $response = Http::put("http://localhost:3000/api/producto/{$saleDetail->product_id}/decrementar-stock", [
+                $response = Http::put("https://microservicioproductos-production.up.railway.app/api/producto/{$saleDetail->product_id}/decrementar-stock", [
                     'quantity' => $saleDetail->quantity
                 ]);
 
@@ -190,7 +190,7 @@ class SalesController extends Controller
             }
 
             //Actualizar stock de productos
-            $response = Http::put("http://localhost:3000/api/producto/{$saleDetail->product_id}/decrementar-stock", [
+            $response = Http::put("https://microservicioproductos-production.up.railway.app/api/producto/{$saleDetail->product_id}/decrementar-stock", [
                 'quantity' => $saleDetail->quantity
             ]);
 
