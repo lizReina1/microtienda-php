@@ -23,6 +23,7 @@ $router->get('/sales/total-sales-by-year', 'SalesController@getTotalSalesByYear'
 $router->get('/sales/total-sales-by-month/{year}', 'SalesController@getTotalSalesByMonth');
 $router->get('/sales/total-sales-by-date-range', 'SalesController@getTotalSalesByDateRange');
 $router->get('/sales/recurring-customers', 'SalesController@getRecurringCustomers');
+$router->get('/sales/conversion-rate', 'SalesController@getConversionRate');
 
 $router->get('/sales','SalesController@index');
 $router->post('/sales', 'SalesController@store');

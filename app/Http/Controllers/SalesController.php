@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Carbon\Carbon;
 
 class SalesController extends Controller
 {
@@ -325,9 +326,6 @@ class SalesController extends Controller
                 $customerDetails['total_purchases'] = $customer->total_purchases;
                 $customerDetails['total_spent'] = $customer->total_spent;
 
-                // Puedes agregar más información del cliente aquí si lo deseas, como su nombre, correo electrónico, etc.
-                // Ejemplo: $customerDetails['name'] = Customer::find($customer->customer_id)->name;
-
                 $customersDetails[] = $customerDetails;
             }
 
@@ -337,5 +335,56 @@ class SalesController extends Controller
         }
     }
 
+    public function getConversionRate(Request $request)
+    {
+        try {
+            // Obtener años y contar ventas por año
+            $salesByYear = Sale::select(
+                DB::raw('YEAR(date) as year'),
+                DB::raw('COUNT(DISTINCT customer_id) as total_sales')
+            )
+                ->groupBy('year')
+                ->get();
 
+            // Combinar los resultados por año
+            $conversionRates = [];
+            foreach ($salesByYear as $sales) {
+                $year = $sales->year;
+                $totalSales = $sales->total_sales;
+
+                // Encontrar el total de visitantes únicos para el año correspondiente
+                $totalVisitors = $this->getTotalVisitorsByYear($year);
+
+                // Calcular la tasa de conversión
+                $conversionRate = $totalVisitors ? ($totalSales / $totalVisitors) * 100 : 0;
+
+                // Almacenar la tasa de conversión por año
+                $conversionRates[] = [
+                    'year' => $year,
+                    'conversion_rate' => round($conversionRate, 2) // Redondear a 2 decimales
+                ];
+            }
+
+            return response()->json(['conversion_rates_by_year' => $conversionRates], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al obtener la tasa de conversión por año',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    function getTotalVisitorsByYear($year) {
+        $array = [
+            2019 => 232,
+            2020 => 426,
+            2021 => 393,
+            2022 => 379,
+            2023 => 404,
+            2024 => 173
+        ];
+
+        return $array[$year] ?? 0;
+    }
 }
