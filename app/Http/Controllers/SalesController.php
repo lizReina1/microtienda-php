@@ -12,11 +12,6 @@ use Carbon\Carbon;
 
 class SalesController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
         $sales = Sale::all();
@@ -24,12 +19,6 @@ class SalesController extends Controller
         return response()->json($sales, 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $rules = [
@@ -104,12 +93,6 @@ class SalesController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Sale  $sales
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function show($id)
     {
         $sale = Sale::with('details')->find($id);
@@ -121,13 +104,6 @@ class SalesController extends Controller
         return response()->json($sale, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Sale  $sales
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function update(Request $request, $id)
     {
         $rules = [
@@ -213,12 +189,6 @@ class SalesController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Sale  $sales
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function destroy($id)
     {
         $sale = Sale::find($id);
@@ -373,6 +343,12 @@ class SalesController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function getSalesByCustomer($customerId) {
+        $sales = Sale::with('details')->where("customer_id", $customerId)->get();
+
+        return response()->json($sales);
     }
 
     function getTotalVisitorsByYear($year) {

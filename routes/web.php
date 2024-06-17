@@ -31,6 +31,7 @@ $router->get('/sales/{id}','SalesController@show');
 $router->get('/sales/find/{id}','SalesController@findById');
 $router->put('/sales/{id}', 'SalesController@update');
 $router->delete('/sales/{id}', 'SalesController@destroy');
+$router->get('/sales/customer/{customerId}','SalesController@getSalesByCustomer');
 
 $router->get('/refunds','RefundsController@index');
 $router->post('/refunds', 'RefundsController@store');
