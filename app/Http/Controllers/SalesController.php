@@ -14,7 +14,7 @@ class SalesController extends Controller
 {
     public function index()
     {
-        $sales = Sale::all();
+        $sales = Sale::orderBy('id', 'desc')->get();
 
         return response()->json($sales, 200);
     }

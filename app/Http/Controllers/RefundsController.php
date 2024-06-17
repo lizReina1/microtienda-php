@@ -9,7 +9,7 @@ class RefundsController extends Controller
 {
     public function index()
     {
-        $Refund = Refund::all();
+        $Refund = Refund::orderBy('id', 'desc')->get();;
         return response()->json($Refund);
     }
 
